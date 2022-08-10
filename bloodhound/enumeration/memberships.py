@@ -577,12 +577,14 @@ class MembershipEnumerator(object):
                 ou["ChildObjects"].append(object)
             
             for gplink in self.addc.get_GPLink(ou["Properties"]["distinguishedname"]):
-                gplink_dn, enforced = ADUtils.get_entry_property(gplink, 'gPLink').split('://')[1].split(';')
-                enforced = int(enforced[0])
-                link = dict()
-                link['IsEnforced'] = bool(enforced)
-                link['GUID'] = self.addomain.dncache[gplink_dn.upper()]['ObjectIdentifier']
-                ou['Links'].append(link)
+                gpos = ADUtils.get_entry_property(gplink, 'gPLink')
+                for gpo in ['['+gpo for gpo in gpos.split('[') if gpo.strip() != '']:
+                    gplink_dn, enforced = gpo.split('://')[1].split(';')
+                    enforced = int(enforced[0])
+                    link = dict()
+                    link['IsEnforced'] = bool(enforced)
+                    link['GUID'] = self.addomain.dncache[gplink_dn.upper()]['ObjectIdentifier']
+                    ou['Links'].append(link)
             
             # Create cache entry for links
             link_output = {
